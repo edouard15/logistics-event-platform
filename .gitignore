@@ -1,0 +1,5 @@
+#keep repo clean and safe
+__pycache__/
+*.pyc
+.env
+venv/

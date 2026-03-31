@@ -1,23 +1,34 @@
-# Logistics FastAPI Microservices
+# Logistics Event Processing Microservices
 
-## Description
-Microservices-based logistics system using FastAPI, Docker, and Kubernetes.
+## Overview
+Cloud-native logistics microservices system built with FastAPI, Docker, and Kubernetes (Minikube).
 
-## Services
-- Order Service
-- Tracking Service
-- API Gateway
+Simulates real-world delivery workflows such as order management and shipment tracking using a scalable microservices architecture.
 
-## Build Images
+---
 
-docker build -t edouard15/order-service ./order-service
-docker build -t edouard15/tracking-service ./tracking-service
-docker build -t edouard15/api-gateway ./api-gateway
+## Architecture
 
-## Deploy to Kubernetes
+- API Gateway (entry point for external requests)
+- Order Service (handles order creation)
+- Tracking Service (handles shipment tracking)
 
-kubectl apply -f k8s/
+Each service is containerized and deployed on Kubernetes with multiple replicas.
 
-## Access
+---
 
-http://<NODE-IP>:30007/track/123
+## Tech Stack
+
+- FastAPI (Python microservices)
+- Docker (containerization)
+- Kubernetes (Minikube for orchestration)
+- REST APIs with Swagger UI documentation
+
+---
+
+## Kubernetes Deployment (Working Setup)
+
+### Running Pods
+
+```bash
+kubectl get pods

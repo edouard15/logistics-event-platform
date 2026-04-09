@@ -88,7 +88,7 @@ jobs:
       uses: medyagh/setup-minikube@latest
 
     - name: Deploy manifests
-      run: kubectl apply -f .
+      run: kubectl apply -f k8s/
 
     - name: Update images (no 'latest')
       run: |

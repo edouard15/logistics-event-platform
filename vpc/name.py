@@ -1,6 +1,8 @@
-import json, time
+import json
+import time
 
 fixed_name = "vpc"
+
 result = {
     "name": f"{fixed_name}-{int(time.time())}",
 }

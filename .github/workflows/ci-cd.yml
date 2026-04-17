@@ -99,11 +99,11 @@ jobs:
         run: terraform apply -auto-approve
 
       - name: Terraform Init (EKS)
-        working-directory: ./cluster/
+        working-directory: ./eks-cluster/
         run: terraform init
 
       - name: Terraform Apply (EKS)
-        working-directory: ./cluster/
+        working-directory: ./eks-cluster/
         run: terraform apply -auto-approve
 
   deploy:

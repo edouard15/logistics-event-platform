@@ -1,14 +1,16 @@
 # Data block to read local vpc terraform.tfstate file
 data "terraform_remote_state" "network" {
-  backend = "local"
+  backend = "s3"
+
   config = {
-    path = "../vpc/terraform.tfstate"
+    bucket = "my-terraform-logistics-bucket-123456"
+    key    = "vpc/terraform.tfstate"
+    region = "us-east-1"
   }
 }
-
 # Create node group in the created vpc using created node role
 resource "aws_eks_node_group" "private-nodes" {
-  cluster_name    = aws_eks_cluster.demo.name
+  cluster_name    = aws_eks_cluster.logistics.name
   node_group_name = "private-nodes"
   node_role_arn   = data.terraform_remote_state.network.outputs.demo_role
 
@@ -35,7 +37,7 @@ resource "aws_eks_node_group" "private-nodes" {
   }
 # This tags are important if we are going to use an auto-scaler
   tags = {
-    "k8s.io/cluster-autoscaler/demo"    = "owned"
+    "k8s.io/cluster-autoscaler/logistics"    = "owned"
     "k8s.io/cluster-autoscaler/enabled" = false
   }
 }

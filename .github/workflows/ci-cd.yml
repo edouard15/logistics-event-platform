@@ -14,6 +14,7 @@ jobs:
 # ---------------- QUALITY ----------------
   quality:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v3
 
@@ -34,8 +35,18 @@ jobs:
       - name: Format check
         run: black --check .
 
-      - name: Tests
-        run: pytest
+      # ---------------- FIXED TEST STRATEGY ----------------
+      - name: Test order-service
+        run: |
+          pytest order-service -v --disable-warnings --maxfail=1 
+
+      - name: Test tracking-service
+        run: |
+          pytest tracking-service -v --disable-warnings --maxfail=1 
+
+      - name: Test api-gateway
+        run: |
+          pytest api-gateway -v --disable-warnings --maxfail=1 
 
 
 # ---------------- BUILD ----------------
@@ -72,7 +83,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      # STATIC AWS CREDS
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -135,7 +145,7 @@ jobs:
           name: tfplan
           path: ${{ env.TF_WORKING_DIR }}
 
-      - name: Terraform Init (required before apply)
+      - name: Terraform Init
         working-directory: ${{ env.TF_WORKING_DIR }}
         run: terraform init -input=false
 

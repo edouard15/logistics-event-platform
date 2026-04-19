@@ -1,2 +1,2 @@
-idef test_gateway():
+def test_gateway():
     assert True

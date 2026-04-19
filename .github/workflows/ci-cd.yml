@@ -2,12 +2,12 @@ name: CI/CD Pipeline (Production EKS)
 
 on:
   push:
-    branches:
-      - master
+    branches: [master]
 
 env:
   IMAGE_TAG: ${{ github.sha }}
   AWS_REGION: us-east-1
+  TF_WORKING_DIR: terraform/envs/prod
 
 jobs:
 
@@ -35,7 +35,7 @@ jobs:
         run: black --check .
 
       - name: Tests
-        run: pytest || true
+        run: pytest
 
 
 # ---------------- BUILD ----------------
@@ -72,7 +72,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: AWS credentials
+      # STATIC AWS CREDS
+      - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -82,34 +83,43 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
 
-      # VPC PLAN
-      - name: Init VPC
-        working-directory: ./vpc
-        run: terraform init -reconfigure
+      - name: Terraform Init
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        run: terraform init -input=false
 
-      - name: Plan VPC
-        working-directory: ./vpc
-        run: terraform plan
+      - name: Terraform Validate
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        run: terraform validate
 
-      # EKS PLAN
-      - name: Init EKS
-        working-directory: ./eks-cluster
-        run: terraform init -reconfigure
+      - name: Terraform Plan
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        run: terraform plan -out=tfplan -input=false
 
-      - name: Plan EKS
-        working-directory: ./eks-cluster
-        run: terraform plan
+      - name: Upload Plan Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: tfplan
+          path: ${{ env.TF_WORKING_DIR }}/tfplan
+
+
+# ---------------- APPROVAL ----------------
+  approval:
+    runs-on: ubuntu-latest
+    needs: terraform-plan
+    environment: production
+    steps:
+      - run: echo "Manual approval granted"
 
 
 # ---------------- TERRAFORM APPLY ----------------
   terraform-apply:
     runs-on: ubuntu-latest
-    needs: terraform-plan
+    needs: approval
 
     steps:
       - uses: actions/checkout@v3
 
-      - name: AWS credentials
+      - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -119,19 +129,19 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
 
-      # APPLY VPC FIRST
-      - name: Apply VPC
-        working-directory: ./vpc
-        run: terraform apply -auto-approve
+      - name: Download Plan
+        uses: actions/download-artifact@v4
+        with:
+          name: tfplan
+          path: ${{ env.TF_WORKING_DIR }}
 
-      # WAIT FOR AWS PROPAGATION (important for EKS stability)
-      - name: Wait for VPC propagation
-        run: sleep 30
+      - name: Terraform Init (required before apply)
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        run: terraform init -input=false
 
-      # APPLY EKS
-      - name: Apply EKS
-        working-directory: ./eks-cluster
-        run: terraform apply -auto-approve
+      - name: Terraform Apply
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        run: terraform apply -input=false tfplan
 
 
 # ---------------- DEPLOY ----------------
@@ -142,7 +152,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: AWS credentials
+      - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -154,7 +164,9 @@ jobs:
 
       - name: Update kubeconfig
         run: |
-          aws eks update-kubeconfig --region $AWS_REGION --name logistics
+          aws eks update-kubeconfig \
+            --region $AWS_REGION \
+            --name prod-eks-cluster
 
       - name: Validate cluster
         run: kubectl get nodes

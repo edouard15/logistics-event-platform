@@ -8,7 +8,6 @@ env:
   IMAGE_TAG: ${{ github.sha }}
   AWS_REGION: us-east-1
   TF_WORKING_DIR: terraform/envs/prod
-  AWS_ROLE_ARN: arn:aws:iam::909614386406:role/Github-Actions
 
 jobs:
 
@@ -36,14 +35,18 @@ jobs:
       - name: Format check
         run: black --check .
 
+      # ---------------- FIXED TEST STRATEGY ----------------
       - name: Test order-service
-        run: pytest order-service -v --disable-warnings --maxfail=1 
+        run: |
+          pytest order-service -v --disable-warnings --maxfail=1 
 
       - name: Test tracking-service
-        run: pytest tracking-service -v --disable-warnings --maxfail=1 
+        run: |
+          pytest tracking-service -v --disable-warnings --maxfail=1 
 
       - name: Test api-gateway
-        run: pytest api-gateway -v --disable-warnings --maxfail=1 
+        run: |
+          pytest api-gateway -v --disable-warnings --maxfail=1 
 
 
 # ---------------- BUILD ----------------
@@ -77,17 +80,14 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
 
-    permissions:
-      id-token: write
-      contents: read
-
     steps:
       - uses: actions/checkout@v3
 
-      - name: Configure AWS credentials (OIDC)
+      - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ env.AWS_ROLE_ARN }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Setup Terraform
@@ -126,17 +126,14 @@ jobs:
     runs-on: ubuntu-latest
     needs: approval
 
-    permissions:
-      id-token: write
-      contents: read
-
     steps:
       - uses: actions/checkout@v3
 
-      - name: Configure AWS credentials (OIDC)
+      - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ env.AWS_ROLE_ARN }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Setup Terraform
@@ -162,21 +159,15 @@ jobs:
     runs-on: ubuntu-latest
     needs: terraform-apply
 
-    permissions:
-      id-token: write
-      contents: read
-
     steps:
       - uses: actions/checkout@v3
 
-      - name: Configure AWS credentials (OIDC)
+      - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ env.AWS_ROLE_ARN }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
-
-      - name: Verify identity
-        run: aws sts get-caller-identity
 
       - name: Install kubectl
         uses: azure/setup-kubectl@v4

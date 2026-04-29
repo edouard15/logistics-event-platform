@@ -24,4 +24,6 @@ module "eks" {
 
   cluster_role_arn = module.iam.cluster_role_arn
   node_role_arn    = module.iam.node_role_arn
+
+  github_actions_role_arn = var.github_actions_role_arn
 }

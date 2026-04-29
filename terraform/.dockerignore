@@ -1,0 +1,5 @@
+#optimize and secure Docker builds
+.git
+__pycache__
+*.pyc
+.env

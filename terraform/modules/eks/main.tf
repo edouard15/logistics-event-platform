@@ -1,6 +1,6 @@
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
-  version =  "~> 20.24"
+  version = "~> 20.24"
 
   cluster_name = var.cluster_name
 
@@ -21,8 +21,26 @@ module "eks" {
       max_size     = 5
 
       instance_types = ["t3.medium"]
-
-      iam_role_arn = var.node_role_arn
+      iam_role_arn   = var.node_role_arn
     }
   }
-}
+
+  # Manage aws-auth automatically
+  manage_aws_auth_configmap = true
+
+  aws_auth_roles = [
+    {
+      rolearn  = "arn:aws:iam::909614386406:role/Github-Actions"
+      username = "github-actions"
+      groups   = ["system:masters"]
+    },
+    {
+      rolearn  = var.node_role_arn
+      username = "system:node:{{EC2PrivateDNSName}}"
+      groups = [
+        "system:bootstrappers",
+        "system:nodes"
+      ]
+    }
+  ]
+} 

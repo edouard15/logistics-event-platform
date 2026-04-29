@@ -14,6 +14,9 @@ module "eks" {
 
   iam_role_arn = var.cluster_role_arn
 
+  # ✅ REQUIRED for new IAM-based access system
+  authentication_mode = "API"
+
   eks_managed_node_groups = {
     default = {
       desired_size = 2
@@ -25,22 +28,20 @@ module "eks" {
     }
   }
 
-  # Manage aws-auth automatically
-  manage_aws_auth_configmap = true
+  # ✅ IAM-based access (replaces aws-auth completely)
+  access_entries = {
+    github = {
+      principal_arn = "arn:aws:iam::909614386406:role/Github-Actions"
 
-  aws_auth_roles = [
-    {
-      rolearn  = "arn:aws:iam::909614386406:role/Github-Actions"
-      username = "github-actions"
-      groups   = ["system:masters"]
-    },
-    {
-      rolearn  = var.node_role_arn
-      username = "system:node:{{EC2PrivateDNSName}}"
-      groups = [
-        "system:bootstrappers",
-        "system:nodes"
-      ]
+      policy_associations = {
+        admin = {
+          policy_arn = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
+
+          access_scope = {
+            type = "cluster"
+          }
+        }
+      }
     }
-  ]
-} 
+  }
+}

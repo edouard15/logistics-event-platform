@@ -2,28 +2,16 @@ from fastapi import FastAPI, HTTPException
 import requests
 import time
 import logging
-import os
 
-from prometheus_client import Counter, Histogram, start_http_server
+from prometheus_client import Counter, Histogram
 
 app = FastAPI()
+
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 REQUEST_COUNT = Counter("http_requests_total", "Total requests")
 REQUEST_LATENCY = Histogram("http_request_duration_seconds", "Latency")
-
-
-def init_observability():
-    try:
-        start_http_server(int(os.getenv("METRICS_PORT", "8000")))
-    except OSError:
-        pass
-
-
-@app.on_event("startup")
-def startup():
-    init_observability()
 
 
 @app.get("/track/{id}")

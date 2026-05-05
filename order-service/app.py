@@ -6,8 +6,8 @@ import os
 from prometheus_client import Counter, Histogram, start_http_server
 from opentelemetry import trace
 from opentelemetry.sdk.trace import TracerProvider
-from opentelemetry.exporter.jaeger.thrift import JaegerExporter
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
+from opentelemetry.exporter.jaeger.thrift import JaegerExporter
 
 app = FastAPI()
 orders = {}
@@ -37,9 +37,7 @@ def init_observability():
             agent_host_name=os.getenv("JAEGER_HOST", "jaeger-agent"),
             agent_port=int(os.getenv("JAEGER_PORT", "6831")),
         )
-        trace.get_tracer_provider().add_span_processor(
-            BatchSpanProcessor(exporter)
-        )
+        trace.get_tracer_provider().add_span_processor(BatchSpanProcessor(exporter))
     except Exception:
         pass
 

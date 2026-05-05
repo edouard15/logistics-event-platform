@@ -34,9 +34,12 @@ def init_observability():
 
     try:
         exporter = JaegerExporter(
-            agent_host_name=os.getenv("JAEGER_HOST", "jaeger-agent"),
-            agent_port=int(os.getenv("JAEGER_PORT", "6831")),
-        )
+    agent_host_name=os.getenv(
+        "JAEGER_HOST",
+        "jaeger-agent",
+    ),
+    agent_port=int(os.getenv("JAEGER_PORT", "6831")),
+)
 
         trace.get_tracer_provider().add_span_processor(BatchSpanProcessor(exporter))
     except Exception:

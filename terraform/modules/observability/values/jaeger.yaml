@@ -1,0 +1,5 @@
+allInOne:
+  enabled: true
+
+agent:
+  enabled: true

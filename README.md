@@ -1,34 +1,45 @@
-# Logistics Event Processing Microservices
+# Logistics Microservices Platform on AWS EKS (CI/CD + Observability)
 
 ## Overview
-Cloud-native logistics microservices system built with FastAPI, Docker, and Kubernetes (Minikube).
+Cloud-native **logistics microservices system** deployed on AWS EKS with full CI/CD and observability stack.
 
-Simulates real-world delivery workflows such as order management and shipment tracking using a scalable microservices architecture.
+Services:
+- API Gateway
+- Order Service
+- Tracking Service
 
 ---
 
 ## Architecture
 
-- API Gateway (entry point for external requests)
-- Order Service (handles order creation)
-- Tracking Service (handles shipment tracking)
+- Kubernetes (EKS)
+- Terraform (Infrastructure as Code)
+- GitHub Actions (CI/CD)
 
-Each service is containerized and deployed on Kubernetes with multiple replicas.
-
----
-
-## Tech Stack
-
-- FastAPI (Python microservices)
-- Docker (containerization)
-- Kubernetes (Minikube for orchestration)
-- REST APIs with Swagger UI documentation
+Observability:
+- Metrics → Prometheus
+- Logs → Fluent Bit + Elasticsearch + Kibana
+- Traces → OpenTelemetry + Jaeger
 
 ---
 
-## Kubernetes Deployment (Working Setup)
+## CI/CD Pipeline
 
-### Running Pods
+1. Code Quality (flake8, black, pytest)
+2. Build & Push Docker images
+3. Terraform Plan & Apply
+4. Deploy to EKS
+5. Observability validation
 
-```bash
-kubectl get pods
+---
+
+## Domain Flow
+
+Order → API Gateway → Order Service → Tracking Service
+
+---
+
+## Access
+
+```text id="a8m2qz"
+http://api.yourdomain.com

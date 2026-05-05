@@ -1,2 +1,5 @@
 fastapi
 uvicorn
+prometheus-client
+opentelemetry-sdk
+opentelemetry-exporter-jaeger

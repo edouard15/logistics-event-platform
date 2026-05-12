@@ -1,33 +1,23 @@
-.
-├── .github/workflows/
-│   └── ci-cd.yml
-│
+logistics-project/
+├── .github/workflows/ci-cd.yml
 ├── services/
-│   ├── api-gateway/
-│   │   ├── app.py
-│   │   ├── requirements.txt
-│   │   └── Dockerfile
-│   │
-│   ├── order-service/
-│   │   ├── app.py
-│   │   ├── requirements.txt
-│   │   └── Dockerfile
-│   │
-│   └── tracking-service/
-│       ├── app.py
-│       ├── requirements.txt
-│       └── Dockerfile
-│
+│   ├── api-gateway/       app.py  requirements.txt  Dockerfile
+│   ├── order-service/     app.py  requirements.txt  Dockerfile
+│   └── tracking-service/  app.py  requirements.txt  Dockerfile
 ├── k8s/
 │   ├── deployment.yaml
 │   ├── svc.yaml
 │   └── ingress.yaml
-│
 ├── terraform/
+│   ├── backend-bootstrap/main.tf        ← preserved exactly as yours
 │   ├── envs/prod/
+│   │   ├── providers.tf                 ← helm/k8s/aws providers live HERE
+│   │   ├── main.tf                      ← networking → eks → observability
+│   │   ├── variables.tf
+│   │   └── outputs.tf
 │   └── modules/
+│       ├── networking/                  ← VPC + IAM combined (matches spec)
 │       ├── eks/
-│       ├── observability/
-│       ├── networking/
-│
+│       └── observability/
+│           └── values/  prometheus.yaml  fluentbit.yaml  jaeger.yaml
 └── README.md

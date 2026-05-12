@@ -1,10 +1,4 @@
-provider "helm" {
-  kubernetes = {
-    host                   = var.cluster_endpoint
-    cluster_ca_certificate = base64decode(var.cluster_ca)
-    token                  = var.cluster_token
-  }
-}
+# modules/observability/main.tf
 
 # ---------------- PROMETHEUS + ALERTMANAGER ----------------
 resource "helm_release" "prometheus" {
@@ -13,8 +7,7 @@ resource "helm_release" "prometheus" {
   chart            = "kube-prometheus-stack"
   namespace        = "monitoring"
   create_namespace = true
-
-  values = [file("${path.module}/values/prometheus.yaml")]
+  values           = [file("${path.module}/values/prometheus.yaml")]
 }
 
 # ---------------- ELASTICSEARCH ----------------
@@ -34,14 +27,13 @@ resource "helm_release" "kibana" {
   namespace  = "logging"
 }
 
-# ---------------- FLUENT BIT (REPLACES FLUENTD) ----------------
+# ---------------- FLUENT BIT ----------------
 resource "helm_release" "fluentbit" {
   name       = "fluent-bit"
   repository = "https://fluent.github.io/helm-charts"
   chart      = "fluent-bit"
   namespace  = "logging"
-
-  values = [file("${path.module}/values/fluentbit.yaml")]
+  values     = [file("${path.module}/values/fluentbit.yaml")]
 }
 
 # ---------------- JAEGER ----------------
@@ -51,6 +43,5 @@ resource "helm_release" "jaeger" {
   chart            = "jaeger"
   namespace        = "observability"
   create_namespace = true
-
-  values = [file("${path.module}/values/jaeger.yaml")]
+  values           = [file("${path.module}/values/jaeger.yaml")]
 }

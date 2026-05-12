@@ -2,6 +2,14 @@ provider "aws" {
   region = var.region
 }
 
+provider "helm" {
+  kubernetes {
+    host                   = module.eks.cluster_endpoint
+    cluster_ca_certificate = base64decode(module.eks.cluster_certificate_authority_data)
+    token                  = data.aws_eks_cluster_auth.this.token
+  }
+}
+
 module "vpc" {
   source = "../../modules/vpc"
 
@@ -27,6 +35,14 @@ module "eks" {
 
 } 
 
+data "aws_eks_cluster_auth" "this" {
+  name = module.eks.cluster_name
+}
+
 module "observability" {
   source = "../../modules/observability"
-} 
+
+  cluster_endpoint = module.eks.cluster_endpoint
+  cluster_ca       = module.eks.cluster_certificate_authority_data
+  cluster_token    = data.aws_eks_cluster_auth.this.token
+}

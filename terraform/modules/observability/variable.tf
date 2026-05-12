@@ -1,3 +1,4 @@
+
 variable "cluster_endpoint" {
   type = string
 }
@@ -7,5 +8,6 @@ variable "cluster_ca" {
 }
 
 variable "cluster_token" {
-  type = string
+  type      = string
+  sensitive = true
 }

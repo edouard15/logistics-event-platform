@@ -17,7 +17,19 @@ resource "helm_release" "elasticsearch" {
   chart            = "elasticsearch"
   namespace        = "logging"
   create_namespace = true
-}
+  timeout          = 600   # ← 10 minutes instead of default 5
+  wait             = true
+
+  set {
+    name  = "replicas"
+    value = "1"   # ← single replica for CI/non-prod to reduce resource pressure
+  }
+
+  set {
+    name  = "minimumMasterNodes"
+    value = "1"
+  }
+} 
 
 # ---------------- KIBANA ----------------
 resource "helm_release" "kibana" {

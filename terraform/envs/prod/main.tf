@@ -10,6 +10,12 @@ provider "helm" {
   }
 }
 
+provider "kubernetes" {
+  host                   = module.eks.cluster_endpoint
+  cluster_ca_certificate = base64decode(module.eks.cluster_certificate_authority_data)
+  token                  = data.aws_eks_cluster_auth.this.token
+} 
+
 module "vpc" {
   source = "../../modules/vpc"
 
@@ -71,4 +77,23 @@ resource "kubernetes_config_map_v1_data" "aws_auth" {
   }
 
   force = true
+  depends_on = [module.eks]
+} 
+
+
+#Add before module.observability
+
+resource "kubernetes_namespace" "logging" {
+  metadata { name = "logging" }
+  depends_on = [module.eks]
+}
+
+resource "kubernetes_namespace" "monitoring" {
+  metadata { name = "monitoring" }
+  depends_on = [module.eks]
+}
+
+resource "kubernetes_namespace" "observability" {
+  metadata { name = "observability" }
+  depends_on = [module.eks]
 }

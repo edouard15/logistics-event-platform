@@ -42,4 +42,24 @@ resource "aws_iam_role_policy_attachment" "cni_policy" {
 resource "aws_iam_role_policy_attachment" "ecr_policy" {
   role       = aws_iam_role.eks_node_role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
+} 
+
+#Add the missing IAM permissions to the GitHub Actions role
+resource "aws_iam_role_policy" "github_actions_eks" {
+  name = "github-actions-eks-access"
+  role = "Github-Actions"   # must match your existing role name exactly
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "eks:DescribeCluster",
+          "eks:ListClusters"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
 }

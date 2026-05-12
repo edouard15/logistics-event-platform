@@ -46,3 +46,29 @@ module "observability" {
   cluster_ca       = module.eks.cluster_certificate_authority_data
   cluster_token    = data.aws_eks_cluster_auth.this.token
 }
+
+
+#Add the GitHub Actions role to aws-auth ConfigMap
+resource "kubernetes_config_map_v1_data" "aws_auth" {
+  metadata {
+    name      = "aws-auth"
+    namespace = "kube-system"
+  }
+
+  data = {
+    mapRoles = yamlencode([
+      {
+        rolearn  = "arn:aws:iam::909614386406:role/Github-Actions"
+        username = "GitHubActions"
+        groups   = ["system:masters"]
+      },
+      {
+        rolearn  = module.iam.node_role_arn
+        username = "system:node:{{EC2PrivateDNSName}}"
+        groups   = ["system:bootstrappers", "system:nodes"]
+      }
+    ])
+  }
+
+  force = true
+}
